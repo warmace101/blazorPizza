@@ -1,0 +1,93 @@
+@page "/order-success"
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<PageTitle>Order Success - Blazing Pizza</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="text-success">🎉 Order Successful!</h1>
+                        <p class="lead">Thank you for your order from Blazing Pizza!</p>
+                        
+                        <div class="alert alert-success">
+                            <h4>Order #BP-@OrderNumber</h4>
+                            <p class="mb-0">Your delicious pizza will be ready in 15-20 minutes!</p>
+                        </div>
+                        
+                        <div class="row text-center mt-4">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="text-primary">⏱️ Estimated Time</h5>
+                                        <p>15-20 minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="text-info">🏪 Pickup Location</h5>
+                                        <p>Main Store</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="text-warning">📞 Contact</h5>
+                                        <p>(555) 123-PIZZA</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary btn-lg me-3" @onclick="OrderAnother">
+                                🍕 Order Another Pizza
+                            </button>
+                            <button class="btn btn-outline-info me-2" @onclick="ViewMenu">
+                                📋 View Full Menu
+                            </button>
+                            <NavLink href="/" class="btn btn-outline-secondary">
+                                🏠 Home
+                            </NavLink>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <h5>🔄 Navigation Workflow Complete</h5>
+                            <p class="mb-0">This completes the routing demonstration from the module, showing:</p>
+                            <ul class="text-start mt-2 mb-0">
+                                <li>✅ Route parameters (<code>/pizzas/{pizza}</code>, <code>/customize/{pizza}</code>)</li>
+                                <li>✅ Multiple routes per component (<code>/payment</code> and <code>/buypizza</code>)</li>
+                                <li>✅ Query string parsing with <code>QueryHelpers</code></li>
+                                <li>✅ Programmatic navigation with <code>NavigationManager.NavigateTo()</code></li>
+                                <li>✅ Navigation information access (URI, BaseURI, query strings)</li>
+                                <li>✅ NavLink components with proper Match attributes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string OrderNumber = DateTime.Now.ToString("HHmmss");
+    
+    private void OrderAnother()
+    {
+        // Navigate back to home page
+        NavManager.NavigateTo("/");
+    }
+    
+    private void ViewMenu()
+    {
+        // Navigate to pizza browser
+        NavManager.NavigateTo("/pizzas");
+    }
+}

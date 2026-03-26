@@ -1,0 +1,48 @@
+@* Child component that uses cascading parameters for calculations *@
+
+<div class="card bg-light">
+    <div class="card-body">
+        <h6 class="card-title">💰 Price Calculator</h6>
+        
+        <div class="mb-2">
+            <strong>Base Price:</strong> @BasePrice.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))
+        </div>
+        
+        <div class="mb-2">
+            <strong>@DealName Discount (@CustomerType):</strong> -@DealDiscount%
+        </div>
+        
+        <div class="mb-2">
+            <strong>Discount Amount:</strong> -@discountAmount.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))
+        </div>
+        
+        <hr>
+        
+        <div class="h5">
+            <strong class="text-success">Final Price: @finalPrice.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</strong>
+        </div>
+        
+        <small class="text-muted">
+            Calculation uses cascading parameters from ancestor components
+        </small>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public decimal BasePrice { get; set; }
+
+    // Cascading parameters received from ancestor components
+    [CascadingParameter(Name="DealName")]
+    private string DealName { get; set; } = "";
+    
+    [CascadingParameter(Name="DealDiscount")]
+    private int DealDiscount { get; set; }
+    
+    [CascadingParameter(Name="CustomerType")]
+    private string CustomerType { get; set; } = "";
+
+    // Calculated properties
+    private decimal discountAmount => BasePrice * (DealDiscount / 100m);
+    private decimal finalPrice => BasePrice - discountAmount;
+}

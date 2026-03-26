@@ -1,0 +1,67 @@
+@page "/simple-pizzas"
+@using BlazingPizza.Data
+@inject PizzaService PizzaSvc
+@rendermode InteractiveServer
+
+<PageTitle>Simple Pizza List</PageTitle>
+
+<h1>Choose your pizza</h1>
+
+<p>We have all these delicious recipes:</p>
+
+@* Conditional rendering - exactly as shown in tutorial *@
+@if (todaysPizzas == null)
+{
+    <p>We're finding out what pizzas are available today...</p>
+}
+else
+{
+    @* Render collection in HTML table - exactly as shown in tutorial *@
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Pizza Name</th>
+                <th>Description</th>
+                <th>Vegetarian?</th>
+                <th>Vegan?</th> 
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* foreach directive to loop through collection *@
+            @foreach (var pizza in todaysPizzas)
+            {
+                <tr>
+                    <td>@pizza.Name</td>
+                    <td>@pizza.Description</td>
+                    <td>@pizza.Vegetarian</td>
+                    <td>@pizza.Vegan</td>
+                    <td>@pizza.Price</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    <div class="alert alert-info mt-4">
+        <h5>Tutorial Pattern Elements Demonstrated:</h5>
+        <ul class="mb-0">
+            <li>@@using directive to import the namespace</li>
+            <li>@@inject directive to inject the service</li>
+            <li>OnInitializedAsync() override to load data</li>
+            <li>@@if directive for conditional rendering</li>
+            <li>@@foreach directive to iterate through collection</li>
+            <li>Async service call with await</li>
+        </ul>
+    </div>
+}
+
+@code {
+    private BlazingPizza.Data.Pizza[]? todaysPizzas;
+
+    // Override OnInitializedAsync - fires when component initialization is complete
+    protected override async Task OnInitializedAsync()
+    {
+        // Call the service using await keyword because it's asynchronous
+        todaysPizzas = await PizzaSvc.GetPizzasAsync();
+    }
+}

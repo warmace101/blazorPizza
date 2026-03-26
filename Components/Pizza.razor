@@ -1,0 +1,22 @@
+@* Simple Pizza component following tutorial pattern exactly *@
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2>New Pizza: @PizzaName</h2>
+        <p>@PizzaDescription</p>
+        
+        <div class="mt-2">
+            <small class="text-muted">
+                Component Parameters: PizzaName="@PizzaName", PizzaDescription="@PizzaDescription"
+            </small>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string PizzaName { get; set; } = "Default Pizza";
+    
+    [Parameter]
+    public string PizzaDescription { get; set; } = "The best pizza you've ever tasted.";
+}

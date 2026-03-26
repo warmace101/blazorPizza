@@ -1,0 +1,211 @@
+@page "/favorite-pizzas/{*favorites}"
+@page "/pizza-search/{*searchterms}"
+@rendermode InteractiveServer
+
+<PageTitle>Catch-all Parameters Demo</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h2>🎯 Catch-all Route Parameters</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h4>Catch-all Parameter Examples</h4>
+                        <p>This page demonstrates catch-all route parameters using <code>{*parameter}</code></p>
+                        <ul>
+                            <li><code>@@page "/favorite-pizzas/{*favorites}"</code> - Captures multiple path segments</li>
+                            <li><code>@@page "/pizza-search/{*searchterms}"</code> - Alternative catch-all route</li>
+                        </ul>
+                        <p><strong>Key Feature:</strong> Catch-all parameters capture paths across multiple URI folder boundaries (forward slashes)</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5>📝 Current URL Analysis</h5>
+                                </div>
+                                <div class="card-body">
+                                    <dl>
+                                        <dt>Full Parameter Value:</dt>
+                                        <dd><code>@(string.IsNullOrEmpty(CatchAllParameter) ? "(empty)" : CatchAllParameter)</code></dd>
+                                        
+                                        <dt>Route Pattern:</dt>
+                                        <dd><code>@GetCurrentRoutePattern()</code></dd>
+                                        
+                                        <dt>Segments Captured:</dt>
+                                        <dd>@GetSegmentCount() path segment(s)</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5>📊 Parsed Results</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (!string.IsNullOrEmpty(CatchAllParameter))
+                                    {
+                                        @if (NavigationManager.Uri.Contains("/favorite-pizzas/"))
+                                        {
+                                            <h6>🍕 Your Favorite Pizzas:</h6>
+                                            <ul>
+                                                @foreach (var pizza in GetParsedItems())
+                                                {
+                                                    <li><span class="badge bg-primary me-1">@pizza</span></li>
+                                                }
+                                            </ul>
+                                        }
+                                        else if (NavigationManager.Uri.Contains("/pizza-search/"))
+                                        {
+                                            <h6>🔍 Search Terms:</h6>
+                                            <ul>
+                                                @foreach (var term in GetParsedItems())
+                                                {
+                                                    <li><span class="badge bg-success me-1">@term</span></li>
+                                                }
+                                            </ul>
+                                        }
+                                        
+                                        <hr>
+                                        <small class="text-muted">
+                                            <strong>Raw value:</strong> "@CatchAllParameter"
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">No catch-all parameter provided in URL</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4>🧪 Example URLs to Test:</h4>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <h6>Multiple Favorites (catch-all captures all segments):</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/favorite-pizzas/margherita" class="btn btn-outline-primary w-100 btn-sm">
+                                    Single: /margherita
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/favorite-pizzas/margherita/hawaiian" class="btn btn-outline-primary w-100 btn-sm">
+                                    Two: /margherita/hawaiian
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/favorite-pizzas/margherita/hawaiian/pepperoni" class="btn btn-outline-primary w-100 btn-sm">
+                                    Three: /margherita/hawaiian/pepperoni
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-12">
+                                <h6>Complex Search Terms:</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/pizza-search/vegetarian/large/extra-cheese" class="btn btn-outline-success w-100 btn-sm">
+                                    Search: vegetarian/large/extra-cheese
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/pizza-search/meat-lovers/medium/thin-crust/spicy" class="btn btn-outline-success w-100 btn-sm">
+                                    Search: meat-lovers/medium/thin-crust/spicy
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/pizza-search/gluten-free/small" class="btn btn-outline-success w-100 btn-sm">
+                                    Search: gluten-free/small
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <h5>📚 Understanding Catch-all Parameters:</h5>
+                        <ul>
+                            <li><strong>Normal parameter:</strong> <code>/pizza/{name}</code> captures only <code>margherita</code> from <code>/pizza/margherita/large</code></li>
+                            <li><strong>Catch-all parameter:</strong> <code>/pizza/{*details}</code> captures <code>margherita/large</code> from <code>/pizza/margherita/large</code></li>
+                            <li><strong>Use cases:</strong> File paths, search queries, breadcrumbs, category hierarchies</li>
+                            <li><strong>Processing:</strong> Split by "/" to get individual segments for further processing</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5>🎯 Comparison with Regular Parameters</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Regular Parameter Route:</h6>
+                                            <code>/pizzas/{name}</code>
+                                            <p class="mt-2 mb-1">URL: <code>/pizzas/margherita/hawaiian</code></p>
+                                            <small>❌ Would NOT match (too many segments)</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Catch-all Parameter Route:</h6>
+                                            <code>/pizzas/{*names}</code>
+                                            <p class="mt-2 mb-1">URL: <code>/pizzas/margherita/hawaiian</code></p>
+                                            <small>✅ MATCHES and captures "margherita/hawaiian"</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? Favorites { get; set; }
+    
+    [Parameter] 
+    public string? SearchTerms { get; set; }
+    
+    @inject NavigationManager NavigationManager
+    
+    // Get the current catch-all parameter value
+    private string CatchAllParameter => Favorites ?? SearchTerms ?? string.Empty;
+    
+    // Parse the catch-all parameter into individual items
+    private List<string> GetParsedItems()
+    {
+        if (string.IsNullOrEmpty(CatchAllParameter))
+            return new List<string>();
+            
+        return CatchAllParameter.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+    }
+    
+    // Get count of segments captured
+    private int GetSegmentCount()
+    {
+        return GetParsedItems().Count;
+    }
+    
+    // Determine which route pattern is currently active
+    private string GetCurrentRoutePattern()
+    {
+        if (NavigationManager.Uri.Contains("/favorite-pizzas/"))
+            return "/favorite-pizzas/{*favorites}";
+        else if (NavigationManager.Uri.Contains("/pizza-search/"))
+            return "/pizza-search/{*searchterms}";
+        else
+            return "(unknown)";
+    }
+}

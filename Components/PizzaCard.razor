@@ -1,0 +1,131 @@
+@* Reusable Pizza Card Component *@
+
+<div class="card mb-3 @CssClass" style="@Style">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">@Name</h5>
+            @if (ShowPrice)
+            {
+                <span class="badge bg-success fs-6">@Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</span>
+            }
+        </div>
+        
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="card-text text-muted">@Description</p>
+        }
+        
+        @if (ShowRating && Rating > 0)
+        {
+            <div class="mb-2">
+                <span class="text-warning">
+                    @for (int i = 0; i < Rating; i++)
+                    {
+                        <span>⭐</span>
+                    }
+                    @if (Rating < 5)
+                    {
+                        @for (int i = Rating; i < 5; i++)
+                        {
+                            <span class="text-muted">☆</span>
+                        }
+                    }
+                </span>
+                <small class="text-muted">(@Rating/5)</small>
+            </div>
+        }
+        
+        @if (Ingredients != null && Ingredients.Any() && ShowIngredients)
+        {
+            <div class="mb-2">
+                <small class="text-muted d-block">Ingredients:</small>
+                <div>
+                    @foreach (var ingredient in Ingredients)
+                    {
+                        <span class="badge bg-light text-dark me-1 mb-1">@ingredient</span>
+                    }
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Size))
+        {
+            <div class="mb-2">
+                <span class="badge bg-secondary">@Size</span>
+                @if (!IsAvailable)
+                {
+                    <span class="badge bg-danger ms-1">Sold Out</span>
+                }
+            </div>
+        }
+        
+        @if (ShowActions)
+        {
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-@(IsAvailable ? "primary" : "secondary") flex-grow-1"
+                        @onclick="HandleOrderClick"
+                        disabled="@(!IsAvailable)">
+                    @(IsAvailable ? $"Order - {Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))}" : "Unavailable")
+                </button>
+                
+                @if (ShowFavoriteButton)
+                {
+                    <button class="btn btn-outline-danger" @onclick="HandleFavoriteClick">
+                        @(IsFavorite ? "❤️" : "🤍")
+                    </button>
+                }
+            </div>
+        }
+        
+        @* Render any additional content passed as child content *@
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+    [Parameter] public decimal Price { get; set; }
+    [Parameter] public string Size { get; set; } = "";
+    [Parameter] public int Rating { get; set; }
+    [Parameter] public bool IsAvailable { get; set; } = true;
+    [Parameter] public List<string>? Ingredients { get; set; }
+    
+    // Display options
+    [Parameter] public bool ShowPrice { get; set; } = true;
+    [Parameter] public bool ShowRating { get; set; } = true;
+    [Parameter] public bool ShowIngredients { get; set; } = true;
+    [Parameter] public bool ShowActions { get; set; } = true;
+    [Parameter] public bool ShowFavoriteButton { get; set; } = false;
+    
+    // State
+    [Parameter] public bool IsFavorite { get; set; } = false;
+    
+    // Styling
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Style { get; set; } = "";
+    
+    // Events
+    [Parameter] public EventCallback<string> OnOrderClicked { get; set; }
+    [Parameter] public EventCallback<bool> OnFavoriteClicked { get; set; }
+    
+    // Child content for additional customization
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task HandleOrderClick()
+    {
+        if (IsAvailable && OnOrderClicked.HasDelegate)
+        {
+            await OnOrderClicked.InvokeAsync(Name);
+        }
+    }
+
+    private async Task HandleFavoriteClick()
+    {
+        IsFavorite = !IsFavorite;
+        if (OnFavoriteClicked.HasDelegate)
+        {
+            await OnFavoriteClicked.InvokeAsync(IsFavorite);
+        }
+    }
+}

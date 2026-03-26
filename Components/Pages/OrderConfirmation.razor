@@ -1,0 +1,161 @@
+@page "/order-confirmation"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<PageTitle>Order Confirmation - Blazing Pizza</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📋 Order Confirmation</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success mb-4">
+                        <h4>Query String Parsing Example</h4>
+                        <p>This page demonstrates query string parsing using <code>QueryHelpers</code> from the module:</p>
+                        <ul>
+                            <li>Full URI: <code>@CurrentUri</code></li>
+                            <li>Query String: <code>@QueryStringDisplay</code></li>
+                        </ul>
+                    </div>
+                    
+                    @if (HasOrderDetails)
+                    {
+                        <h3>Your Order Details</h3>
+                        
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(Size))
+                                {
+                                    <p><strong>Size:</strong> @Size</p>
+                                }
+                                
+                                @if (Toppings.Any())
+                                {
+                                    <p><strong>Extra Toppings:</strong></p>
+                                    <ul>
+                                        @foreach (var topping in Toppings)
+                                        {
+                                            <li>@topping</li>
+                                        }
+                                    </ul>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(Instructions))
+                                {
+                                    <p><strong>Special Instructions:</strong></p>
+                                    <p class="text-muted">@Instructions</p>
+                                }
+                                
+                                <hr>
+                                <p class="mb-0"><strong>Total Items:</strong> 1 pizza</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-success btn-lg me-3" @onclick="ProceedToPayment">
+                                💳 Proceed to Payment
+                            </button>
+                            <button class="btn btn-outline-primary me-2" @onclick="ModifyOrder">
+                                ✏️ Modify Order
+                            </button>
+                            <NavLink href="/" class="btn btn-outline-secondary">
+                                🏠 Back to Menu
+                            </NavLink>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <h4>No Order Details Found</h4>
+                            <p>It looks like you arrived here without any order information. Let's get you back to the menu!</p>
+                            <NavLink href="/" class="btn btn-primary">🍕 Browse Pizzas</NavLink>
+                        </div>
+                    }
+                    
+                    <div class="alert alert-info mt-4">
+                        <h5>🔍 Technical Information</h5>
+                        <dl class="mb-0">
+                            <dt>Current URI:</dt>
+                            <dd><small>@CurrentUri</small></dd>
+                            
+                            <dt>Base URI:</dt>
+                            <dd><small>@BaseUri</small></dd>
+                            
+                            <dt>Parsed Parameters:</dt>
+                            <dd>
+                                <small>
+                                    Size: @(string.IsNullOrEmpty(Size) ? "Not specified" : Size)<br>
+                                    Toppings: @(Toppings.Any() ? string.Join(", ", Toppings) : "None")<br>
+                                    Instructions: @(string.IsNullOrEmpty(Instructions) ? "None" : "Present")
+                                </small>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string Size = string.Empty;
+    private List<string> Toppings = new List<string>();
+    private string Instructions = string.Empty;
+    
+    private string CurrentUri = string.Empty;
+    private string BaseUri = string.Empty;
+    private string QueryStringDisplay = string.Empty;
+    
+    private bool HasOrderDetails => !string.IsNullOrEmpty(Size) || Toppings.Any() || !string.IsNullOrEmpty(Instructions);
+    
+    protected override void OnInitialized()
+    {
+        // Get navigation information
+        CurrentUri = NavManager.Uri;
+        BaseUri = NavManager.BaseUri;
+        
+        // Parse query string using QueryHelpers as demonstrated in the module
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        QueryStringDisplay = uri.Query;
+        
+        var queryParams = QueryHelpers.ParseQuery(uri.Query);
+        
+        // Extract size parameter
+        if (queryParams.TryGetValue("size", out var sizeValue))
+        {
+            Size = sizeValue.ToString();
+        }
+        
+        // Extract toppings parameter (comma-separated)
+        if (queryParams.TryGetValue("toppings", out var toppingsValue))
+        {
+            var toppingsString = toppingsValue.ToString();
+            if (!string.IsNullOrEmpty(toppingsString))
+            {
+                Toppings = toppingsString.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+        }
+        
+        // Extract instructions parameter
+        if (queryParams.TryGetValue("instructions", out var instructionsValue))
+        {
+            Instructions = instructionsValue.ToString();
+        }
+    }
+    
+    private void ProceedToPayment()
+    {
+        // Navigate to payment using NavigateTo() as shown in module
+        NavManager.NavigateTo("payment");
+    }
+    
+    private void ModifyOrder()
+    {
+        // Go back to customization (this would typically pass the pizza name too)
+        NavManager.NavigateTo("customize-pizza/margherita");
+    }
+}

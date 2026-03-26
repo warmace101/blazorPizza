@@ -1,0 +1,238 @@
+@page "/filtered-pizzas"
+@using BlazingPizza.Data
+@inject PizzaService PizzaSvc
+@rendermode InteractiveServer
+
+<PageTitle>Filtered Pizza Data</PageTitle>
+
+<div class="container">
+    <h1>🔍 Filtered Pizza Data</h1>
+    <p class="text-muted">Demonstrating advanced service methods with filtering and categorization</p>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📋 Categories</h5>
+                </div>
+                <div class="card-body">
+                    @if (categories == null)
+                    {
+                        <p>Loading categories...</p>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            <button class="list-group-item list-group-item-action @(selectedCategory == string.Empty ? "active" : "")" 
+                                    @onclick="() => LoadPizzasByCategory(string.Empty)">
+                                All Categories (@totalCount)
+                            </button>
+                            @foreach (var category in categories)
+                            {
+                                <button class="list-group-item list-group-item-action @(selectedCategory == category ? "active" : "")" 
+                                        @onclick="() => LoadPizzasByCategory(category)">
+                                    @GetCategoryIcon(category) @category (@GetCategoryCount(category))
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>💰 Price Filter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Min Price: @minPrice.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</label>
+                        <input type="range" class="form-range" min="0" max="30" step="1" 
+                               @bind="minPrice" @bind:event="oninput" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Max Price: @maxPrice.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</label>
+                        <input type="range" class="form-range" min="0" max="30" step="1" 
+                               @bind="maxPrice" @bind:event="oninput" />
+                    </div>
+                    <button class="btn btn-primary btn-sm" @onclick="LoadPizzasByPriceRange">
+                        Apply Price Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            @if (filteredPizzas == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Loading filtered pizzas...</p>
+                </div>
+            }
+            else if (!filteredPizzas.Any())
+            {
+                <div class="alert alert-warning">
+                    <h4>No pizzas match your criteria</h4>
+                    <p>Try adjusting your filters or selecting a different category.</p>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>
+                        @if (!string.IsNullOrEmpty(selectedCategory))
+                        {
+                            <span>@GetCategoryIcon(selectedCategory) @selectedCategory Pizzas</span>
+                        }
+                        else
+                        {
+                            <span>🍕 All Pizzas</span>
+                        }
+                    </h3>
+                    <span class="badge bg-primary fs-6">@filteredPizzas.Length results</span>
+                </div>
+
+                <div class="row">
+                    @foreach (var pizza in filteredPizzas)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 @(pizza.IsAvailable ? "" : "opacity-75")">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title">@pizza.Name</h5>
+                                        <span class="badge bg-@GetCategoryBadgeColor(pizza.Category)">
+                                            @pizza.Category
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted">@pizza.Description</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            @if (pizza.Vegetarian)
+                                            {
+                                                <span class="badge bg-success">🥬 Vegetarian</span>
+                                            }
+                                            @if (pizza.Vegan)
+                                            {
+                                                <span class="badge bg-info">🌱 Vegan</span>
+                                            }
+                                        </div>
+                                        <div class="text-warning">
+                                            @for (int i = 0; i < pizza.Rating; i++)
+                                            {
+                                                <span>⭐</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong class="text-success fs-5">@pizza.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</strong>
+                                        @if (pizza.IsAvailable)
+                                        {
+                                            <button class="btn btn-primary btn-sm">Order Now</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm" disabled>Sold Out</button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private BlazingPizza.Data.Pizza[]? filteredPizzas;
+    private string[]? categories;
+    private string selectedCategory = string.Empty;
+    private Dictionary<string, int> categoryCounts = new();
+    private int totalCount = 0;
+    
+    // Price filter 
+    private decimal minPrice = 0;
+    private decimal maxPrice = 30;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load categories first
+        categories = await PizzaSvc.GetCategoriesAsync();
+        
+        // Load all pizzas initially  
+        await LoadPizzasByCategory(string.Empty);
+        
+        // Calculate category counts
+        await CalculateCategoryCounts();
+    }
+
+    private async Task LoadPizzasByCategory(string category)
+    {
+        selectedCategory = category;
+        
+        if (string.IsNullOrEmpty(category))
+        {
+            filteredPizzas = await PizzaSvc.GetPizzasAsync();
+        }
+        else
+        {
+            filteredPizzas = await PizzaSvc.GetPizzasByCategoryAsync(category);
+        }
+    }
+
+    private async Task LoadPizzasByPriceRange()
+    {
+        filteredPizzas = await PizzaSvc.GetPizzasByPriceRangeAsync(minPrice, maxPrice);
+        selectedCategory = string.Empty; // Clear category selection
+    }
+
+    private async Task CalculateCategoryCounts()
+    {
+        var allPizzas = await PizzaSvc.GetPizzasAsync();
+        totalCount = allPizzas.Length;
+        
+        if (categories != null)
+        {
+            foreach (var category in categories)
+            {
+                var categoryPizzas = await PizzaSvc.GetPizzasByCategoryAsync(category);
+                categoryCounts[category] = categoryPizzas.Length;
+            }
+        }
+    }
+
+    private int GetCategoryCount(string category)
+    {
+        return categoryCounts.ContainsKey(category) ? categoryCounts[category] : 0;
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        return category switch
+        {
+            "Classic" => "🍕",
+            "Meat" => "🥩", 
+            "Vegetarian" => "🥬",
+            "Vegan" => "🌱",
+            "Gourmet" => "👨‍🍳",
+            _ => "🍕"
+        };
+    }
+
+    private string GetCategoryBadgeColor(string category)
+    {
+        return category switch
+        {
+            "Classic" => "primary",
+            "Meat" => "danger",
+            "Vegetarian" => "success", 
+            "Vegan" => "info",
+            "Gourmet" => "warning",
+            _ => "secondary"
+        };
+    }
+}

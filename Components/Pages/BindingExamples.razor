@@ -1,0 +1,172 @@
+@page "/binding-examples"
+@using System.Globalization
+@rendermode InteractiveServer
+
+<PageTitle>Data Binding Examples</PageTitle>
+
+<div class="container">
+    <h1>🔗 Data Binding Examples</h1>
+    <p class="text-muted">Direct examples from the Blazor data binding documentation</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>📧 Basic Email Binding</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Your email address is:
+                        <input class="form-control mt-2" @bind="customerEmail" />
+                    </p>
+                    <div class="alert alert-info mt-3">
+                        <strong>Current Email:</strong> @customerEmail
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>🍕 Favorite Pizza (onchange)</h5>
+                </div>
+                <div class="card-body">
+                    <h4>My favorite pizza is: @favPizza</h4>
+
+                    <p>
+                        Enter your favorite pizza:
+                        <input class="form-control mt-2" @bind="favPizza" />
+                    </p>
+                    <small class="text-muted">Note: Updates when you tab out or press Enter (onchange event)</small>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>⚡ Live Pizza Search (oninput)</h5>
+                </div>
+                <div class="card-body">
+                    <h4>My favorite pizza is: @livePizza</h4>
+
+                    <p>
+                        Enter your favorite pizza:
+                        <input class="form-control mt-2" @bind-value="livePizza" @bind-value:event="oninput" />
+                    </p>
+                    <small class="text-muted">Note: Updates as you type (oninput event)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>📅 UK Birthday Pizza Order</h5>
+                </div>
+                <div class="card-body">
+                    <h3>Order a pizza for your birthday!</h3>
+
+                    <p>
+                        <label class="form-label">Enter your birth date:</label>
+                        <input type="date" class="form-control" @bind="birthdate" @bind:format="dd-MM-yyyy" />
+                    </p>
+                    
+                    <div class="alert alert-success mt-3">
+                        <strong>Your birthday:</strong> @birthdate.ToString("dd-MM-yyyy") (UK format)
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>⭐ Pizza Approval Rating</h5>
+                </div>
+                <div class="card-body">
+                    <h4>Pizza: @PizzaName</h4>
+                    <p><strong>Approval rating:</strong> @approvalRating</p>
+
+                    <p>
+                        <label class="form-label">Set a new approval rating:</label>
+                        <input class="form-control" @bind="ApprovalRating" placeholder="Enter rating (0.000 - 10.000)" />
+                    </p>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <strong>Current Rating:</strong> @approvalRating.ToString("0.000", culture)
+                    </div>
+                    <small class="text-muted">Uses custom get/set accessors for formatting</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📊 Data Binding Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Basic @("@bind") Examples:</h6>
+                            <ul>
+                                <li><strong>Email:</strong> @customerEmail</li>
+                                <li><strong>Favorite Pizza (onchange):</strong> @favPizza</li>
+                                <li><strong>Live Search (oninput):</strong> @livePizza</li>
+                                <li><strong>Formatted Date:</strong> @birthdate.ToString("dd-MM-yyyy")</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Advanced Formatting:</h6>
+                            <ul>
+                                <li><strong>Pizza Name:</strong> @PizzaName</li>
+                                <li><strong>Raw Rating:</strong> @approvalRating</li>
+                                <li><strong>Formatted Rating:</strong> @approvalRating.ToString("0.000", culture)</li>
+                                <li><strong>Culture:</strong> @culture.Name</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <h5>🔍 Code Examples Used:</h5>
+        <ul class="mb-0">
+            <li><code>@("@bind=\"customerEmail\"")</code> - Basic two-way binding</li>
+            <li><code>@("@bind-value=\"livePizza\" @bind-value:event=\"oninput\"")</code> - Event-specific binding</li>
+            <li><code>@("@bind=\"birthdate\" @bind:format=\"dd-MM-yyyy\"")</code> - Date format binding</li>
+            <li><code>ApprovalRating { get; set; }</code> - Custom property with formatting logic</li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    // Basic binding properties
+    private string customerEmail = "user@contoso.com";
+    private string favPizza { get; set; } = "Margherita";
+    private string livePizza { get; set; } = "Margherita";
+    
+    // Date formatting
+    private DateTime birthdate { get; set; } = new(2000, 1, 1);
+    
+    // Custom formatting for approval rating
+    private decimal approvalRating = 7.850m;
+    private NumberStyles style = NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign;
+    private CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+    
+    // Computed property for pizza name
+    private string PizzaName => string.IsNullOrEmpty(favPizza) ? "Unknown Pizza" : favPizza;
+    
+    // Custom property with get/set accessors for formatting
+    private string ApprovalRating
+    {
+        get => approvalRating.ToString("0.000", culture);
+        set
+        {
+            if (decimal.TryParse(value, style, culture, out var number))
+            {
+                approvalRating = Math.Round(Math.Clamp(number, 0, 10), 3);
+            }
+        }
+    }
+}

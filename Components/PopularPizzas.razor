@@ -1,0 +1,108 @@
+<div class="card h-100">
+    <div class="card-header bg-primary text-white">
+        <h3 class="card-title">🍕 Popular Pizzas</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            @foreach (var pizza in popularPizzas)
+            {
+                <div class="col-12 mb-3">
+                    <div class="p-3 border rounded @(pizza.IsAvailable ? "border-success" : "border-secondary")">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">@pizza.Name</h6>
+                                <p class="mb-0 text-muted small">@pizza.Description</p>
+                                <div class="mt-1">
+                                    <span class="badge bg-info">@pizza.Size</span>
+                                    <span class="text-warning ms-2">
+                                        @for (int i = 0; i < pizza.Rating; i++)
+                                        {
+                                            <span>⭐</span>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success d-block">@pizza.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</strong>
+                                <button class="btn btn-sm @(pizza.IsAvailable ? "btn-success" : "btn-secondary")" 
+                                        @onclick="() => OrderPizza(pizza.Name)"
+                                        disabled="@(!pizza.IsAvailable)">
+                                    @(pizza.IsAvailable ? "Order" : "Sold Out")
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm" @onclick="ToggleAvailability">
+                🔄 Toggle Availability
+            </button>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(orderMessage))
+        {
+            <div class="alert alert-success mt-3">
+                @orderMessage
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Pizza> popularPizzas = new();
+    private string orderMessage = "";
+
+    protected override void OnInitialized()
+    {
+        LoadPizzas();
+    }
+
+    private void LoadPizzas()
+    {
+        popularPizzas = new List<Pizza>
+        {
+            new Pizza { Name = "Supreme Deluxe", Description = "Pepperoni, mushrooms, peppers, olives", Price = 18.99m, Size = "Large", Rating = 5, IsAvailable = true },
+            new Pizza { Name = "Meat Lovers", Description = "Pepperoni, sausage, ham, bacon", Price = 19.99m, Size = "Large", Rating = 4, IsAvailable = true },
+            new Pizza { Name = "Veggie Garden", Description = "Mushrooms, peppers, onions, tomatoes", Price = 16.99m, Size = "Large", Rating = 4, IsAvailable = false },
+            new Pizza { Name = "Hawaiian Paradise", Description = "Ham, pineapple, extra cheese", Price = 17.99m, Size = "Large", Rating = 3, IsAvailable = true }
+        };
+    }
+
+    private void OrderPizza(string pizzaName)
+    {
+        orderMessage = $"🍕 {pizzaName} added to cart! Ready in 15-20 minutes.";
+        
+        // Clear message after 3 seconds (in a real app, you'd use a timer)
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            await InvokeAsync(() =>
+            {
+                orderMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void ToggleAvailability()
+    {
+        var random = new Random();
+        foreach (var pizza in popularPizzas)
+        {
+            pizza.IsAvailable = random.Next(0, 2) == 1;
+        }
+    }
+
+    public class Pizza
+    {
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public decimal Price { get; set; }
+        public string Size { get; set; } = "";
+        public int Rating { get; set; }
+        public bool IsAvailable { get; set; }
+    }
+}

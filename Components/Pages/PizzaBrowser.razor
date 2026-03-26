@@ -1,0 +1,298 @@
+@page "/pizzas"
+@rendermode InteractiveServer
+
+<PageTitle>Pizza Browser</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center text-danger">🍕 Pizza Browser</h1>
+            <p class="text-center text-muted">Discover our amazing selection of pizzas</p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text">🔍</span>
+                <input class="form-control" placeholder="Search pizzas..." @bind="searchTerm" @oninput="FilterPizzas" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" @bind="selectedCategory" @bind:after="FilterPizzas">
+                <option value="">All Categories</option>
+                <option value="Meat">Meat Lovers</option>
+                <option value="Vegetarian">Vegetarian</option>
+                <option value="Classic">Classic</option>
+                <option value="Gourmet">Gourmet</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" @bind="selectedSize" @bind:after="FilterPizzas">
+                <option value="">All Sizes</option>
+                <option value="Small">Small</option>
+                <option value="Medium">Medium</option>
+                <option value="Large">Large</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" @bind="showAvailableOnly" @bind:after="FilterPizzas" id="availableOnly">
+                <label class="form-check-label" for="availableOnly">
+                    Available only
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-info">@filteredPizzas.Count pizza(s) found</span>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="ClearFilters">Clear Filters</button>
+                    <button class="btn btn-outline-primary btn-sm ms-2" @onclick="AddRandomPizza">Add Random Pizza</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (filteredPizzas.Any())
+        {
+            @foreach (var pizza in filteredPizzas)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 @(pizza.IsAvailable ? "" : "opacity-75")">
+                        <div class="card-body">
+                            <h5 class="card-title d-flex justify-content-between">
+                                @pizza.Name
+                                <span class="badge bg-@(GetCategoryColor(pizza.Category))">@pizza.Category</span>
+                            </h5>
+                            <p class="card-text text-muted">@pizza.Description</p>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">Ingredients:</small>
+                                <div class="mt-1">
+                                    @foreach (var ingredient in pizza.Ingredients)
+                                    {
+                                        <span class="badge bg-light text-dark me-1">@ingredient</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="badge bg-secondary">@pizza.Size</span>
+                                    <span class="text-warning ms-2">
+                                        @for (int i = 0; i < pizza.Rating; i++)
+                                        {
+                                            <span>⭐</span>
+                                        }
+                                        (@pizza.Rating)/5
+                                    </span>
+                                </div>
+                                <strong class="text-success">@pizza.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</strong>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-@(pizza.IsAvailable ? "success" : "secondary") flex-grow-1"
+                                        @onclick="() => OrderPizza(pizza)"
+                                        disabled="@(!pizza.IsAvailable)">
+                                    @(pizza.IsAvailable ? $"Order - {pizza.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))}" : "Sold Out")
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => RemovePizza(pizza.Id)">
+                                    🗑️
+                                </button>
+                            </div>
+
+                            @if (!pizza.IsAvailable)
+                            {
+                                <small class="text-danger">⚠️ Currently unavailable</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <h4 class="text-muted">No pizzas found matching your criteria</h4>
+                <p>Try adjusting your filters or search term</p>
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(orderMessage))
+    {
+        <div class="position-fixed bottom-0 end-0 m-3">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @orderMessage
+                <button type="button" class="btn-close" @onclick="ClearOrderMessage"></button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<PizzaItem> allPizzas = new();
+    private List<PizzaItem> filteredPizzas = new();
+    private string searchTerm = "";
+    private string selectedCategory = "";
+    private string selectedSize = "";
+    private bool showAvailableOnly = false;
+    private string orderMessage = "";
+
+    protected override void OnInitialized()
+    {
+        LoadPizzas();
+        filteredPizzas = allPizzas.ToList();
+    }
+
+    private void LoadPizzas()
+    {
+        allPizzas = new List<PizzaItem>
+        {
+            new PizzaItem 
+            { 
+                Id = 1, Name = "Margherita Classic", Category = "Classic", Size = "Large", 
+                Price = 14.99m, Rating = 5, IsAvailable = true,
+                Description = "Traditional Italian pizza with fresh basil and mozzarella",
+                Ingredients = new List<string> { "Tomato Sauce", "Mozzarella", "Fresh Basil", "Olive Oil" }
+            },
+            new PizzaItem 
+            { 
+                Id = 2, Name = "Pepperoni Deluxe", Category = "Classic", Size = "Large", 
+                Price = 16.99m, Rating = 4, IsAvailable = true,
+                Description = "Loaded with premium pepperoni and extra cheese",
+                Ingredients = new List<string> { "Tomato Sauce", "Mozzarella", "Pepperoni" }
+            },
+            new PizzaItem 
+            { 
+                Id = 3, Name = "Meat Lovers Supreme", Category = "Meat", Size = "Large", 
+                Price = 21.99m, Rating = 5, IsAvailable = true,
+                Description = "For serious meat enthusiasts - pepperoni, sausage, ham, and bacon",
+                Ingredients = new List<string> { "Tomato Sauce", "Mozzarella", "Pepperoni", "Italian Sausage", "Ham", "Bacon" }
+            },
+            new PizzaItem 
+            { 
+                Id = 4, Name = "Veggie Garden", Category = "Vegetarian", Size = "Medium", 
+                Price = 15.99m, Rating = 4, IsAvailable = false,
+                Description = "Fresh vegetables on a crispy crust",
+                Ingredients = new List<string> { "Tomato Sauce", "Mozzarella", "Mushrooms", "Bell Peppers", "Red Onion", "Olives" }
+            },
+            new PizzaItem 
+            { 
+                Id = 5, Name = "Truffle Mastery", Category = "Gourmet", Size = "Small", 
+                Price = 24.99m, Rating = 5, IsAvailable = true,
+                Description = "Luxurious truffle oil with wild mushrooms and arugula",
+                Ingredients = new List<string> { "White Sauce", "Mozzarella", "Wild Mushrooms", "Truffle Oil", "Arugula", "Parmesan" }
+            },
+            new PizzaItem 
+            { 
+                Id = 6, Name = "Hawaiian Paradise", Category = "Classic", Size = "Large", 
+                Price = 17.99m, Rating = 3, IsAvailable = true,
+                Description = "Tropical twist with ham and pineapple",
+                Ingredients = new List<string> { "Tomato Sauce", "Mozzarella", "Ham", "Pineapple" }
+            }
+        };
+    }
+
+    private void FilterPizzas()
+    {
+        filteredPizzas = allPizzas.Where(p => 
+            (string.IsNullOrEmpty(searchTerm) || p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || 
+             p.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(selectedCategory) || p.Category == selectedCategory) &&
+            (string.IsNullOrEmpty(selectedSize) || p.Size == selectedSize) &&
+            (!showAvailableOnly || p.IsAvailable)
+        ).ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchTerm = "";
+        selectedCategory = "";
+        selectedSize = "";
+        showAvailableOnly = false;
+        filteredPizzas = allPizzas.ToList();
+    }
+
+    private void OrderPizza(PizzaItem pizza)
+    {
+        orderMessage = $"🍕 {pizza.Name} ({pizza.Size}) has been added to your cart for {pizza.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))}!";
+        
+        // Clear message after 4 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(4000);
+            await InvokeAsync(() =>
+            {
+                orderMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void ClearOrderMessage()
+    {
+        orderMessage = "";
+    }
+
+    private void RemovePizza(int pizzaId)
+    {
+        allPizzas = allPizzas.Where(p => p.Id != pizzaId).ToList();
+        FilterPizzas();
+    }
+
+    private void AddRandomPizza()
+    {
+        var random = new Random();
+        var categories = new[] { "Classic", "Meat", "Vegetarian", "Gourmet" };
+        var sizes = new[] { "Small", "Medium", "Large" };
+        var names = new[] { "Spicy Diablo", "Cheese Explosion", "Mediterranean", "BBQ Ranch", "Four Cheese", "Pesto Delight" };
+        
+        var newId = allPizzas.Max(p => p.Id) + 1;
+        var newPizza = new PizzaItem
+        {
+            Id = newId,
+            Name = names[random.Next(names.Length)] + " #" + newId,
+            Category = categories[random.Next(categories.Length)],
+            Size = sizes[random.Next(sizes.Length)],
+            Price = (decimal)(random.NextDouble() * 15 + 10), // $10-25
+            Rating = random.Next(3, 6), // 3-5 stars
+            IsAvailable = random.Next(0, 4) != 0, // 75% chance available
+            Description = "Delicious pizza with amazing flavors and fresh ingredients",
+            Ingredients = new List<string> { "Tomato Sauce", "Mozzarella", "Secret Blend" }
+        };
+        
+        allPizzas.Add(newPizza);
+        FilterPizzas();
+    }
+
+    private string GetCategoryColor(string category)
+    {
+        return category switch
+        {
+            "Classic" => "primary",
+            "Meat" => "danger",
+            "Vegetarian" => "success",
+            "Gourmet" => "warning",
+            _ => "secondary"
+        };
+    }
+
+    public class PizzaItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Size { get; set; } = "";
+        public decimal Price { get; set; }
+        public int Rating { get; set; }
+        public bool IsAvailable { get; set; }
+        public List<string> Ingredients { get; set; } = new();
+    }
+}

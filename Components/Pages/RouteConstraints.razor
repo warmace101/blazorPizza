@@ -1,0 +1,213 @@
+@page "/pizza-size/{preferredsize:int}"
+@page "/pizza-promo/{ispremium:bool}" 
+@page "/pizza-order/{orderdate:datetime}"
+@page "/pizza-price/{maxprice:decimal}"
+@page "/pizza-weight/{weight:double}"
+@page "/pizza-id/{pizzaid:guid}"
+@rendermode InteractiveServer
+
+<PageTitle>Route Constraints Demo</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h2>🎯 Route Constraints Examples</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h4>Route Constraint Types</h4>
+                        <p>This page demonstrates different route constraint types for type-safe routing:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><code>{preferredsize:int}</code> - Integer constraint</li>
+                                    <li><code>{ispremium:bool}</code> - Boolean constraint</li>
+                                    <li><code>{orderdate:datetime}</code> - DateTime constraint</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><code>{maxprice:decimal}</code> - Decimal constraint</li>
+                                    <li><code>{weight:double}</code> - Double constraint</li>
+                                    <li><code>{pizzaid:guid}</code> - GUID constraint</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (PreferredSize > 0)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <h4>🔢 Integer Constraint Demo</h4>
+                                        <p><strong>Route:</strong> <code>/pizza-size/{preferredsize:int}</code></p>
+                                        <p><strong>Your preferred pizza size:</strong> @PreferredSize inches</p>
+                                        <p class="mb-0"><small>Only numeric values will match this route</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (IsPremiumSet)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h4>✅ Boolean Constraint Demo</h4>
+                                        <p><strong>Route:</strong> <code>/pizza-promo/{ispremium:bool}</code></p>
+                                        <p><strong>Premium pizza option:</strong> @(IsPremium ? "Yes, premium pizza!" : "Regular pizza")</p>
+                                        <p class="mb-0"><small>Only 'true' or 'false' values will match this route</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (OrderDate != DateTime.MinValue)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body">
+                                        <h4>📅 DateTime Constraint Demo</h4>
+                                        <p><strong>Route:</strong> <code>/pizza-order/{orderdate:datetime}</code></p>
+                                        <p><strong>Order date:</strong> @OrderDate.ToString("MMMM dd, yyyy")</p>
+                                        <p class="mb-0"><small>Only valid date formats will match this route (e.g., 2024-03-15)</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (MaxPrice > 0)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h4>💰 Decimal Constraint Demo</h4>
+                                        <p><strong>Route:</strong> <code>/pizza-price/{maxprice:decimal}</code></p>
+                                        <p><strong>Maximum price:</strong> @MaxPrice.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</p>
+                                        <p class="mb-0"><small>Only decimal values will match this route (e.g., 15.99)</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (Weight > 0)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-secondary text-white">
+                                    <div class="card-body">
+                                        <h4>⚖️ Double Constraint Demo</h4>
+                                        <p><strong>Route:</strong> <code>/pizza-weight/{weight:double}</code></p>
+                                        <p><strong>Pizza weight:</strong> @Weight.ToString("F2") lbs</p>
+                                        <p class="mb-0"><small>Only floating-point values will match this route</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (PizzaId != Guid.Empty)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-dark text-white">
+                                    <div class="card-body">
+                                        <h4>🆔 GUID Constraint Demo</h4>
+                                        <p><strong>Route:</strong> <code>/pizza-id/{pizzaid:guid}</code></p>
+                                        <p><strong>Pizza ID:</strong> @PizzaId</p>
+                                        <p class="mb-0"><small>Only valid GUID formats will match this route</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>🧪 Test Different Route Constraints:</h4>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <a href="/pizza-size/12" class="btn btn-primary w-100">
+                                        Integer: /pizza-size/12
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="/pizza-promo/true" class="btn btn-info w-100">
+                                        Boolean: /pizza-promo/true
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="/pizza-order/2024-03-15" class="btn btn-warning w-100">
+                                        DateTime: /pizza-order/2024-03-15
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="/pizza-price/19.99" class="btn btn-success w-100">
+                                        Decimal: /pizza-price/19.99
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="/pizza-weight/2.5" class="btn btn-secondary w-100">
+                                        Double: /pizza-weight/2.5
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="/pizza-id/CD2C1638-1638-72D5-1638-DEADBEEF1638" class="btn btn-dark w-100">
+                                        GUID: Sample ID
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <h5>💡 How Route Constraints Work:</h5>
+                        <ul class="mb-0">
+                            <li>If the URL parameter doesn't match the constraint type, the route won't match</li>
+                            <li>This prevents type conversion errors and provides better routing control</li>
+                            <li>Try navigating to <code>/pizza-size/abc</code> - it won't match because "abc" isn't an integer</li>
+                            <li>Multiple constraints can be combined: <code>{id:int:min(1)}</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int PreferredSize { get; set; }
+    
+    [Parameter]
+    public bool IsPremium { get; set; }
+    
+    [Parameter]
+    public DateTime OrderDate { get; set; }
+    
+    [Parameter]
+    public decimal MaxPrice { get; set; }
+    
+    [Parameter]
+    public double Weight { get; set; }
+    
+    [Parameter]
+    public Guid PizzaId { get; set; }
+    
+    // Helper properties to detect which route was matched
+    private bool IsPremiumSet => IsPremium || NavigationManager.Uri.Contains("/pizza-promo/");
+    
+    @inject NavigationManager NavigationManager
+}
+}

@@ -1,0 +1,110 @@
+@page "/payment"
+@page "/buypizza"
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<PageTitle>Payment - Blazing Pizza</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>💳 Payment</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h4>Multiple Route Example</h4>
+                        <p>This page demonstrates multiple @@page routes:</p>
+                        <ul>
+                            <li><code>@@page "/payment"</code></li>
+                            <li><code>@@page "/buypizza"</code></li>
+                        </ul>
+                        <p>Both routes lead to this same component!</p>
+                    </div>
+                    
+                    <h3>Order Summary</h3>
+                    <p>Complete your pizza order below:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Card Number</label>
+                                <input type="text" class="form-control" placeholder="1234 5678 9012 3456">
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Expiry</label>
+                                        <input type="text" class="form-control" placeholder="MM/YY">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">CVC</label>
+                                        <input type="text" class="form-control" placeholder="123">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5>Route Information</h5>
+                                    <p><strong>Current Route:</strong> <code>@GetCurrentRoute()</code></p>
+                                    <p><strong>Accessed Via:</strong> @GetRouteDescription()</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-success btn-lg me-3" @onclick="ProcessPayment">
+                            💸 Complete Order
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="GoBack">
+                            ⬅️ Go Back
+                        </button>
+                        <NavLink href="/" class="btn btn-outline-primary ms-2">
+                            🏠 Home
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string GetCurrentRoute()
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        return uri.PathAndQuery;
+    }
+    
+    private string GetRouteDescription()
+    {
+        var path = NavManager.ToAbsoluteUri(NavManager.Uri).AbsolutePath;
+        return path switch
+        {
+            "/payment" => "Standard payment route",
+            "/buypizza" => "Quick buy route (legacy)",
+            _ => "Unknown route"
+        };
+    }
+    
+    private void ProcessPayment()
+    {
+        // Simulate payment processing
+        Console.WriteLine("Processing payment...");
+        
+        // Navigate to success page using NavigateTo method
+        NavManager.NavigateTo("order-success");
+    }
+    
+    private void GoBack()
+    {
+        // Go back to previous page (or home if no history)
+        NavManager.NavigateTo("/");
+    }
+}

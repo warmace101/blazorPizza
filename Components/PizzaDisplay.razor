@@ -1,0 +1,84 @@
+@* Child component demonstrating Component Parameters *@
+@using BlazingPizza.Data
+
+<div class="card mb-3 @CssClass" style="height: 100%;">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title">@PizzaName</h5>
+            <span class="badge bg-primary">#@PizzaId</span>
+        </div>
+        
+        <p class="card-text text-muted">@PizzaDescription</p>
+        
+        @if (Topping != null)
+        {
+            <div class="mb-2">
+                <h6 class="text-success">🍕 Featured Topping: @Topping.Name</h6>
+                <small class="text-muted">@Topping.Ingredients</small>
+            </div>
+        }
+        
+        @if (BasePrice > 0)
+        {
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="h5 text-success mb-0">@BasePrice.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</span>
+                <button class="btn btn-primary btn-sm" @onclick="HandleOrderClick">
+                    Order Pizza
+                </button>
+            </div>
+        }
+
+        @if (ShowDebugInfo)
+        {
+            <div class="mt-2 p-2 bg-light rounded">
+                <small class="text-muted">
+                    <strong>Component Parameters Debug:</strong><br>
+                    ID: @PizzaId | Price: @BasePrice | CssClass: "@CssClass"
+                </small>
+            </div>
+        }
+    </div>
+    
+    @* Render any child content passed to this component *@
+    @ChildContent
+</div>
+
+@code {
+    // Component Parameters - decorated with [Parameter] attribute
+    [Parameter]
+    public int PizzaId { get; set; }
+    
+    [Parameter]
+    public string PizzaName { get; set; } = "Mystery Pizza";
+    
+    [Parameter]
+    public string PizzaDescription { get; set; } = "The best pizza you've ever tasted.";
+    
+    [Parameter]
+    public decimal BasePrice { get; set; }
+    
+    [Parameter]
+    public PizzaTopping? Topping { get; set; }
+    
+    [Parameter]
+    public string CssClass { get; set; } = "";
+    
+    [Parameter]
+    public bool ShowDebugInfo { get; set; } = false;
+    
+    // Event callback parameter - allows parent to handle events
+    [Parameter]
+    public EventCallback<string> OnOrderClicked { get; set; }
+    
+    // Child content parameter - allows nested content
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private async Task HandleOrderClick()
+    {
+        if (OnOrderClicked.HasDelegate)
+        {
+            await OnOrderClicked.InvokeAsync(PizzaName);
+        }
+    }
+}

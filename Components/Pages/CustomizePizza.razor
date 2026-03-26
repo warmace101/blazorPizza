@@ -1,0 +1,191 @@
+@page "/customize-pizza/{pizzaname}"
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<PageTitle>Customize @PizzaName - Blazing Pizza</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ Customize Your @PizzaName</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h4>Route Parameter Example</h4>
+                        <p>This page demonstrates route parameters from the module:</p>
+                        <ul>
+                            <li><code>@@page "/customize-pizza/{pizzaname}"</code></li>
+                            <li>Parameter received: <strong>@PizzaName</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>Pizza Options</h3>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Size</label>
+                                <select class="form-select" @bind="SelectedSize">
+                                    <option value="">Select Size</option>
+                                    <option value="Small">Small - $12.99</option>
+                                    <option value="Medium">Medium - $16.99</option>
+                                    <option value="Large">Large - $19.99</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Extra Toppings</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" @bind="HasPepperoni">
+                                            <label class="form-check-label">Pepperoni (+$2.00)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" @bind="HasMushrooms">
+                                            <label class="form-check-label">Mushrooms (+$1.50)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" @bind="HasExtraCheese">
+                                            <label class="form-check-label">Extra Cheese (+$2.50)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" @bind="HasPineapple">
+                                            <label class="form-check-label">Pineapple (+$1.75)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" @bind="HasOlives">
+                                            <label class="form-check-label">Black Olives (+$1.25)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" @bind="HasJalapenos">
+                                            <label class="form-check-label">Jalapeños (+$1.00)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Special Instructions</label>
+                                <textarea class="form-control" rows="3" @bind="SpecialInstructions" 
+                                         placeholder="Any special requests..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5>Order Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Pizza:</strong> @PizzaName</p>
+                                    @if (!string.IsNullOrEmpty(SelectedSize))
+                                    {
+                                        <p><strong>Size:</strong> @SelectedSize</p>
+                                    }
+                                    
+                                    @if (GetSelectedToppings().Any())
+                                    {
+                                        <p><strong>Extra Toppings:</strong></p>
+                                        <ul class="small">
+                                            @foreach (var topping in GetSelectedToppings())
+                                            {
+                                                <li>@topping</li>
+                                            }
+                                        </ul>
+                                    }
+                                    
+                                    @if (!string.IsNullOrEmpty(SpecialInstructions))
+                                    {
+                                        <p><strong>Instructions:</strong></p>
+                                        <p class="small text-muted">@SpecialInstructions</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-success btn-lg me-3" @onclick="AddToCart" 
+                                disabled="@string.IsNullOrEmpty(SelectedSize)">
+                            🛒 Add to Cart
+                        </button>
+                        <button class="btn btn-primary me-3" @onclick="NavigateToDetails">
+                            📝 View Details
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="NavigateHome">
+                            ⬅️ Back to Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string PizzaName { get; set; } = string.Empty;
+    
+    private string SelectedSize = string.Empty;
+    private bool HasPepperoni = false;
+    private bool HasMushrooms = false;
+    private bool HasExtraCheese = false;
+    private bool HasPineapple = false;
+    private bool HasOlives = false;
+    private bool HasJalapenos = false;
+    private string SpecialInstructions = string.Empty;
+    
+    private List<string> GetSelectedToppings()
+    {
+        var toppings = new List<string>();
+        if (HasPepperoni) toppings.Add("Pepperoni");
+        if (HasMushrooms) toppings.Add("Mushrooms");
+        if (HasExtraCheese) toppings.Add("Extra Cheese");
+        if (HasPineapple) toppings.Add("Pineapple");
+        if (HasOlives) toppings.Add("Black Olives");
+        if (HasJalapenos) toppings.Add("Jalapeños");
+        return toppings;
+    }
+    
+    private void AddToCart()
+    {
+        // Demonstrate NavigateTo with query parameters
+        var toppings = string.Join(",", GetSelectedToppings());
+        var queryString = $"?size={SelectedSize}";
+        
+        if (!string.IsNullOrEmpty(toppings))
+        {
+            queryString += $"&toppings={Uri.EscapeDataString(toppings)}";
+        }
+        
+        if (!string.IsNullOrEmpty(SpecialInstructions))
+        {
+            queryString += $"&instructions={Uri.EscapeDataString(SpecialInstructions)}";
+        }
+        
+        NavManager.NavigateTo($"order-confirmation{queryString}");
+    }
+    
+    private void NavigateToDetails()
+    {
+        // Navigate to pizza details with size parameter
+        if (!string.IsNullOrEmpty(SelectedSize))
+        {
+            NavManager.NavigateTo($"pizzas/{PizzaName}/{SelectedSize}");
+        }
+        else
+        {
+            NavManager.NavigateTo($"pizzas/{PizzaName}");
+        }
+    }
+    
+    private void NavigateHome()
+    {
+        NavManager.NavigateTo("/");
+    }
+}

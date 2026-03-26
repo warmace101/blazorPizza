@@ -1,0 +1,21 @@
+@* Child component that receives cascading parameters *@
+
+<div class="border border-info p-2 m-2 bg-info bg-opacity-10 rounded">
+    <h6>🧒 Child Component</h6>
+    <p>Cascaded Store Name: <strong class="text-primary">@StoreName</strong></p>
+    <p>Current Item: <strong class="text-info">@CurrentItemName</strong></p>
+    <p>User Count: <span class="badge bg-success">@UserCount</span></p>
+    
+    <small class="text-muted">This component automatically receives cascaded values from ancestors</small>
+</div>
+
+@code {
+    [CascadingParameter]
+    public string StoreName { get; set; } = "";
+    
+    [CascadingParameter(Name = "CurrentItem")]
+    public string CurrentItemName { get; set; } = "";
+    
+    [CascadingParameter]
+    public int UserCount { get; set; }
+}

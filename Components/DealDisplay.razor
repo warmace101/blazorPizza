@@ -1,0 +1,16 @@
+@* Simple component that displays cascading parameter - tutorial pattern *@
+
+<div class="card bg-light mb-3">
+    <div class="card-body">
+        <h2>Deal: @DealName</h2>
+        <p>This component automatically receives the cascading parameter from its ancestor.</p>
+        <small class="text-muted">
+            Cascading Parameter: DealName = "@DealName"
+        </small>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name="DealName")]
+    private string DealName { get; set; } = "";
+}

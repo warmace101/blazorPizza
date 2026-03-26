@@ -1,0 +1,36 @@
+@* Pizza Topping component using custom class parameter - tutorial pattern *@
+@using BlazingPizza.Data
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2>New Topping: @Topping.Name</h2>
+        <p>Ingredients: @Topping.Ingredients</p>
+        
+        @if (Topping.Price > 0)
+        {
+            <p><strong>Price:</strong> @Topping.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</p>
+        }
+        
+        <div class="d-flex gap-2">
+            @if (Topping.IsSpicy)
+            {
+                <span class="badge bg-danger">🌶️ Spicy</span>
+            }
+            @if (Topping.IsVegetarian)
+            {
+                <span class="badge bg-success">🥬 Vegetarian</span>
+            }
+        </div>
+        
+        <div class="mt-2">
+            <small class="text-muted">
+                Custom class parameter: PizzaTopping object with Name, Ingredients, Price, etc.
+            </small>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public PizzaTopping Topping { get; set; } = new PizzaTopping();
+}

@@ -1,0 +1,59 @@
+<div class="card h-100">
+    <div class="card-header bg-warning text-dark">
+        <h3 class="card-title">🎉 Special Deals</h3>
+    </div>
+    <div class="card-body">
+        @foreach (var deal in specialDeals)
+        {
+            <div class="alert alert-info mb-2">
+                <h5>@deal.Title</h5>
+                <p class="mb-1">@deal.Description</p>
+                <strong class="text-success">@deal.Price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</strong>
+                <span class="badge bg-danger ms-2">@deal.Discount</span>
+            </div>
+        }
+        
+        <button class="btn btn-warning btn-sm mt-3" @onclick="RefreshDeals">
+            🔄 Refresh Deals (@refreshCount)
+        </button>
+    </div>
+</div>
+
+@code {
+    private List<Deal> specialDeals = new();
+    private int refreshCount = 0;
+
+    protected override void OnInitialized()
+    {
+        LoadDeals();
+    }
+
+    private void LoadDeals()
+    {
+        specialDeals = new List<Deal>
+        {
+            new Deal { Title = "Margherita Monday", Description = "Classic Margherita pizza with fresh basil", Price = 12.99m, Discount = "30% OFF" },
+            new Deal { Title = "Pepperoni Power", Description = "Double pepperoni with extra cheese", Price = 15.99m, Discount = "25% OFF" },
+            new Deal { Title = "Family Feast", Description = "2 Large pizzas + garlic bread + drinks", Price = 29.99m, Discount = "40% OFF" }
+        };
+    }
+
+    private void RefreshDeals()
+    {
+        refreshCount++;
+        // Simulate getting new deals
+        var random = new Random();
+        foreach (var deal in specialDeals)
+        {
+            deal.Price = Math.Round(deal.Price + (decimal)(random.NextDouble() * 3 - 1.5), 2);
+        }
+    }
+
+    public class Deal
+    {
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public decimal Price { get; set; }
+        public string Discount { get; set; } = "";
+    }
+}

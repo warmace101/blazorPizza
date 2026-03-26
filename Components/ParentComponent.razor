@@ -1,0 +1,16 @@
+@* Parent component that can contain child components *@
+
+<div class="border p-3 bg-light rounded">
+    <h6>👨‍👧‍👦 Parent Component</h6>
+    <p class="mb-2">This parent component contains child components below:</p>
+    
+    @* Render child content passed to this component *@
+    @ChildContent
+    
+    <small class="text-muted">Note: Cascading parameters flow down to all descendant components</small>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

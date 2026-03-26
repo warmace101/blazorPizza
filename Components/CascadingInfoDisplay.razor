@@ -1,0 +1,30 @@
+@* Child component that receives cascading parameters *@
+
+<div class="card bg-light">
+    <div class="card-body">
+        <h6 class="card-title">📡 Cascading Info Display</h6>
+        <p class="card-text">
+            This component receives cascading parameters automatically:
+        </p>
+        <ul class="list-unstyled">
+            <li><strong>🎯 Deal:</strong> @DealName</li>
+            <li><strong>💰 Discount:</strong> @DealDiscount%</li>
+            <li><strong>👤 Customer:</strong> @CustomerType</li>
+        </ul>
+        <blockquote class="blockquote-footer">
+            Received via <code>[CascadingParameter]</code> attributes
+        </blockquote>
+    </div>
+</div>
+
+@code {
+    // Cascading parameters with named matching
+    [CascadingParameter(Name="DealName")]
+    private string DealName { get; set; } = "";
+    
+    [CascadingParameter(Name="DealDiscount")]
+    private int DealDiscount { get; set; }
+    
+    [CascadingParameter(Name="CustomerType")]
+    private string CustomerType { get; set; } = "";
+}

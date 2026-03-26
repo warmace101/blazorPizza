@@ -1,0 +1,143 @@
+@page "/pizzas/{pizzaname}"
+@page "/pizzas/{pizzaname}/{size}"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<PageTitle>Pizza Details - @PizzaName</PageTitle>
+
+<div class="container">
+    <h1>🍕 Pizza Details</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>@PizzaName @(Size != null ? $"({Size})" : "")</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Pizza:</strong> @PizzaName</p>
+                    @if (Size != null)
+                    {
+                        <p><strong>Size:</strong> @Size</p>
+                    }
+                    @if (!string.IsNullOrEmpty(ExtraTopping))
+                    {
+                        <p><strong>Extra Topping:</strong> @ExtraTopping</p>
+                    }
+                    @if (!string.IsNullOrEmpty(Quantity))
+                    {
+                        <p><strong>Quantity:</strong> @Quantity</p>
+                    }
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-success me-2" @onclick="AddToOrder">
+                            🛒 Add to Cart
+                        </button>
+                        <button class="btn btn-primary me-2" @onclick="NavigateToCustomize">
+                            ⚙️ Customize Pizza
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="NavigateToPayment">
+                            💳 Buy Now!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>🔗 Navigation Info</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>Current URI:</dt>
+                        <dd><small>@CurrentUri</small></dd>
+                        
+                        <dt>Base URI:</dt>
+                        <dd><small>@BaseUri</small></dd>
+                        
+                        <dt>Base Relative Path:</dt>
+                        <dd><small>@BaseRelativePath</small></dd>
+                        
+                        @if (!string.IsNullOrEmpty(QueryString))
+                        {
+                            <dt>Query String:</dt>
+                            <dd><small>@QueryString</small></dd>
+                        }
+                    </dl>
+                    
+                    <div class="mt-3">
+                        <NavLink href="/" Match="NavLinkMatch.All" class="btn btn-outline-primary btn-sm me-2">
+                            🏠 Home
+                        </NavLink>
+                        <NavLink href="/pizzas" Match="NavLinkMatch.Prefix" class="btn btn-outline-info btn-sm">
+                            🍕 All Pizzas
+                        </NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string PizzaName { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string? Size { get; set; }
+    
+    private string ExtraTopping { get; set; } = string.Empty;
+    private string Quantity { get; set; } = string.Empty;
+    private string CurrentUri { get; set; } = string.Empty;
+    private string BaseUri { get; set; } = string.Empty;
+    private string BaseRelativePath { get; set; } = string.Empty;
+    private string QueryString { get; set; } = string.Empty;
+    
+    protected override void OnInitialized()
+    {
+        // Get navigation information as shown in the module
+        CurrentUri = NavManager.Uri;
+        BaseUri = NavManager.BaseUri;
+        
+        // Calculate base relative path
+        var currentUri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        BaseRelativePath = currentUri.AbsolutePath;
+        QueryString = currentUri.Query;
+        
+        // Parse query string for extra parameters using QueryHelpers
+        // This demonstrates the Microsoft.AspNetCore.WebUtilities usage from the module
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        var queryParams = QueryHelpers.ParseQuery(uri.Query);
+        
+        if (queryParams.TryGetValue("extratopping", out var extraTopping))
+        {
+            ExtraTopping = extraTopping.ToString();
+        }
+        
+        if (queryParams.TryGetValue("quantity", out var quantity))
+        {
+            Quantity = quantity.ToString();
+        }
+    }
+    
+    private void AddToOrder()
+    {
+        // Simulate adding to order
+        Console.WriteLine($"Added {PizzaName} to order!");
+    }
+    
+    private void NavigateToCustomize()
+    {
+        // Demonstrate NavigationManager.NavigateTo() as shown in module
+        NavManager.NavigateTo($"customize-pizza/{PizzaName}");
+    }
+    
+    private void NavigateToPayment()
+    {
+        // Demonstrate programmatic navigation
+        NavManager.NavigateTo("payment");
+    }
+}

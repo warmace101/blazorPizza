@@ -1,0 +1,316 @@
+@page "/data-sharing"
+@using BlazingPizza.Data
+@inject PizzaSalesState SalesState
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>Data Sharing in Blazor</PageTitle>
+
+<div class="container">
+    <h1>📊 Data Sharing in Blazor Applications</h1>
+    <p class="text-muted">
+        This page demonstrates three different techniques for sharing data between Blazor components:
+        <strong>Component Parameters</strong>, <strong>Cascading Parameters</strong>, and <strong>AppState Pattern</strong>.
+    </p>
+
+    @* AppState Pattern Demo at the top *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success text-white">
+                <div class="card-header">
+                    <h4>🌐 AppState Pattern - Global State</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>📈 Today's Sales Statistics</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Pizzas Sold:</strong> @SalesState.PizzasSoldToday</li>
+                                <li><strong>Total Revenue:</strong> @SalesState.TotalRevenue.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</li>
+                                <li><strong>Average Order:</strong> @SalesState.AverageOrderValue.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-US"))</li>
+                                <li><strong>Last Pizza:</strong> @(string.IsNullOrEmpty(SalesState.LastOrderedPizza) ? "None yet" : SalesState.LastOrderedPizza)</li>
+                                @if (SalesState.PizzasSoldToday > 0)
+                                {
+                                    <li><small class="text-light">Last order: @SalesState.LastOrderTime.ToString("HH:mm:ss")</small></li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>🎯 Actions</h5>
+                            <p>@SalesState.GetSalesToday()</p>
+                            <button class="btn btn-light btn-sm me-2" @onclick="SimulateSale">
+                                🍕 Simulate Sale ($15.99)
+                            </button>
+                            <button class="btn btn-outline-light btn-sm" @onclick="SalesState.ResetDailyStats">
+                                🔄 Reset Stats
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small>
+                            💡 <strong>AppState Pattern:</strong> This data is shared across ALL components in the application using a scoped service.
+                            Values persist across page navigation and are available to any component that injects <code>PizzaSalesState</code>.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Cascading Parameters Demo *@
+    <CascadingValue Name="DealName" Value="@currentDeal">
+        <CascadingValue Name="DealDiscount" Value="@dealDiscount">
+            <CascadingValue Name="CustomerType" Value="@customerType">
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-warning">
+                            <div class="card-header">
+                                <h4>📡 Cascading Parameters Demo</h4>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-dark btn-sm" @onclick="SetFlashFridayDeal">
+                                        Flash Friday Deal
+                                    </button>
+                                    <button class="btn btn-dark btn-sm" @onclick="SetWeekendDeal">
+                                        Weekend Special
+                                    </button>
+                                    <button class="btn btn-dark btn-sm" @onclick="SetStudentDeal">
+                                        Student Deal
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p>
+                                    💡 <strong>Current cascading values:</strong> These values are automatically available to ALL descendant components nested within the CascadingValue tags.
+                                </p>
+                                <ul>
+                                    <li><strong>Deal Name:</strong> "@currentDeal"</li>
+                                    <li><strong>Discount:</strong> @dealDiscount%</li>
+                                    <li><strong>Customer Type:</strong> @customerType</li>
+                                </ul>
+
+                                @* Child components that receive cascading parameters *@
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <CascadingInfoDisplay />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <CascadingPriceCalculator BasePrice="19.99m" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </CascadingValue>
+        </CascadingValue>
+    </CascadingValue>
+
+    @* Component Parameters Demo *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-header">
+                    <h4>🔗 Component Parameters Demo</h4>
+                </div>
+                <div class="card-body">
+                    <p>
+                        💡 <strong>Component Parameters:</strong> Data is passed directly from parent to child components using [Parameter] attributes.
+                    </p>
+                    
+                    @if (!string.IsNullOrEmpty(orderMessage))
+                    {
+                        <div class="alert alert-light">
+                            <strong>Order Event:</strong> @orderMessage
+                        </div>
+                    }
+
+                    <div class="row">
+                        @* First pizza with component parameters *@
+                        <div class="col-md-4">
+                            <PizzaDisplay PizzaId="101"
+                                         PizzaName="Margherita Supreme"
+                                         PizzaDescription="Fresh tomatoes, mozzarella, and basil"
+                                         BasePrice="16.99m"
+                                         CssClass="border-success"
+                                         ShowDebugInfo="true"
+                                         OnOrderClicked="HandlePizzaOrder">
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">👆 Child content rendered here</small>
+                                </div>
+                            </PizzaDisplay>
+                        </div>
+
+                        @* Second pizza with topping parameter *@
+                        <div class="col-md-4">
+                            <PizzaDisplay PizzaId="102"
+                                         PizzaName="Spicy Pepperoni"
+                                         PizzaDescription="Classic pepperoni with a kick"
+                                         BasePrice="18.99m"
+                                         Topping="@spicyTopping"
+                                         CssClass="border-danger"
+                                         OnOrderClicked="HandlePizzaOrder" />
+                        </div>
+
+                        @* Third pizza with different parameters *@
+                        <div class="col-md-4">
+                            <PizzaDisplay PizzaId="103"
+                                         PizzaName="Veggie Garden"
+                                         BasePrice="15.99m"
+                                         Topping="@veggieTopping"
+                                         CssClass="border-info"
+                                         OnOrderClicked="HandlePizzaOrder">
+                                <div class="badge bg-success">Vegetarian</div>
+                            </PizzaDisplay>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Summary comparison *@
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>📋 Data Sharing Techniques Comparison</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Technique</th>
+                                    <th>Use Case</th>
+                                    <th>Pros</th>
+                                    <th>Cons</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Component Parameters</strong></td>
+                                    <td>Direct parent → child data passing</td>
+                                    <td>Simple, type-safe, explicit</td>
+                                    <td>Only works for direct children</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cascading Parameters</strong></td>
+                                    <td>Data needed by multiple descendant components</td>
+                                    <td>Available to all descendants, no prop drilling</td>
+                                    <td>Can become implicit, harder to trace</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>AppState Pattern</strong></td>
+                                    <td>Global application state</td>
+                                    <td>Available everywhere, persists across navigation</td>
+                                    <td>Can lead to tight coupling if overused</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // AppState is injected and available throughout the component
+
+    // Local component state for cascading parameters demo
+    private string currentDeal = "Flash Friday";
+    private int dealDiscount = 25;
+    private string customerType = "Premium";
+    
+    // Local state for component parameters demo
+    private string orderMessage = "";
+    
+    // Sample topping objects for component parameters
+    private PizzaTopping spicyTopping = new()
+    {
+        Name = "Jalapeño Fire",
+        Ingredients = "Jalapeños, hot peppers, spicy sauce",
+        Price = 2.99m,
+        IsSpicy = true,
+        IsVegetarian = true
+    };
+    
+    private PizzaTopping veggieTopping = new()
+    {
+        Name = "Garden Fresh",
+        Ingredients = "Mushrooms, bell peppers, onions, olives",
+        Price = 3.99m,
+        IsSpicy = false,
+        IsVegetarian = true
+    };
+
+    protected override void OnInitialized()
+    {
+        // Subscribe to AppState changes to get automatic updates
+        SalesState.OnStateChanged += StateHasChanged;
+    }
+
+    // Method to set cascading parameters
+    private void SetDeal(string deal, int discount, string customer)
+    {
+        currentDeal = deal;
+        dealDiscount = discount;
+        customerType = customer;
+    }
+
+    // Event handler for component parameter event callback
+    private void HandlePizzaOrder(string pizzaName)
+    {
+        orderMessage = $"Order received for {pizzaName} at {DateTime.Now:HH:mm:ss}";
+        
+        // Also update the global AppState
+        var price = pizzaName switch
+        {
+            "Margherita Supreme" => 16.99m,
+            "Spicy Pepperoni" => 18.99m,
+            "Veggie Garden" => 15.99m,
+            _ => 17.99m
+        };
+        
+        SalesState.RecordSale(pizzaName, price);
+        
+        // Clear message after 3 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            await InvokeAsync(() =>
+            {
+                orderMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void SimulateSale()
+    {
+        SalesState.RecordSale("Test Pizza", 15.99m);
+    }
+
+    private void SetFlashFridayDeal()
+    {
+        SetDeal("Flash Friday", 25, "Premium");
+    }
+
+    private void SetWeekendDeal()
+    {
+        SetDeal("Weekend Special", 15, "Regular");
+    }
+
+    private void SetStudentDeal()
+    {
+        SetDeal("Student Discount", 20, "Student");
+    }
+
+    // Properly dispose of event subscription
+    public void Dispose()
+    {
+        SalesState.OnStateChanged -= StateHasChanged;
+    }
+}

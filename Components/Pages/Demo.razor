@@ -1,0 +1,205 @@
+@page "/demo"
+@rendermode InteractiveServer
+
+<PageTitle>Component Demo</PageTitle>
+
+<div class="container">
+    <h1 class="text-center mb-4">🎨 Blazor Component Demo</h1>
+    <p class="text-center text-muted mb-5">Demonstrating the reusable PizzaCard component with different configurations</p>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <h3>🍕 Standard Pizza Card</h3>
+            <PizzaCard Name="Margherita Supreme"
+                       Description="Classic Italian pizza with fresh mozzarella and basil"
+                       Price="16.99m"
+                       Size="Large"
+                       Rating="5"
+                       IsAvailable="true"
+                       Ingredients="@standardIngredients"
+                       OnOrderClicked="HandlePizzaOrder" />
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h3>❤️ Pizza Card with Favorites</h3>
+            <PizzaCard Name="Truffle Delight"
+                       Description="Luxurious truffle oil with wild mushrooms"
+                       Price="24.99m"
+                       Size="Medium"
+                       Rating="4"
+                       IsAvailable="true"
+                       ShowFavoriteButton="true"
+                       IsFavorite="@isFavorite"
+                       Ingredients="@gourmetIngredients"
+                       OnOrderClicked="HandlePizzaOrder"
+                       OnFavoriteClicked="HandleFavoriteToggle" />
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h3>🚫 Sold Out Pizza</h3>
+            <PizzaCard Name="Pepperoni Classic"
+                       Description="Traditional pepperoni pizza - temporarily unavailable"
+                       Price="14.99m"
+                       Size="Large"
+                       Rating="3"
+                       IsAvailable="false"
+                       Ingredients="@soldOutIngredients"
+                       CssClass="border-danger"
+                       OnOrderClicked="HandlePizzaOrder" />
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h3>🎨 Customized Display</h3>
+            <PizzaCard Name="Mystery Pizza"
+                       Description="A surprise combination of our chef's favorite ingredients"
+                       Price="19.99m"
+                       Size="Large"
+                       Rating="0"
+                       IsAvailable="true"
+                       ShowRating="false"
+                       ShowIngredients="false"
+                       ShowActions="false"
+                       CssClass="border-warning bg-light"
+                       OnOrderClicked="HandlePizzaOrder">
+                @* Custom child content *@
+                <div class="mt-3 text-center">
+                    <button class="btn btn-warning" @onclick="HandleMysteryOrder">
+                        🎲 Order Mystery Pizza
+                    </button>
+                    <p class="text-muted small mt-2">Ingredients are a surprise!</p>
+                </div>
+            </PizzaCard>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h3>💎 Premium Card</h3>
+            <PizzaCard Name="Diamond Deluxe"
+                       Description="Our most expensive pizza with the finest ingredients"
+                       Price="39.99m"
+                       Size="Large"
+                       Rating="5"
+                       IsAvailable="true"
+                       Ingredients="@premiumIngredients"
+                       CssClass="border-warning bg-gradient"
+                       Style="box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);"
+                       OnOrderClicked="HandlePizzaOrder" />
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <h3>🥬 Simple Veggie</h3>
+            <PizzaCard Name="Garden Fresh"
+                       Description="Simple and healthy vegetable pizza"
+                       Price="12.99m"
+                       Size="Medium"
+                       Rating="4"
+                       IsAvailable="true"
+                       ShowPrice="true"
+                       Ingredients="@veggieIngredients"
+                       OnOrderClicked="HandlePizzaOrder" />
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(orderMessage))
+    {
+        <div class="alert alert-success mt-4">
+            <strong>Order Placed!</strong> @orderMessage
+            <button type="button" class="btn-close float-end" @onclick="ClearMessage"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(favoriteMessage))
+    {
+        <div class="alert alert-info mt-4">
+            <strong>Favorites Updated!</strong> @favoriteMessage
+            <button type="button" class="btn-close float-end" @onclick="ClearFavoriteMessage"></button>
+        </div>
+    }
+
+    <div class="mt-5 p-4 bg-light rounded">
+        <h4>🧩 Component Features Demonstrated</h4>
+        <ul>
+            <li><strong>Parameter Binding:</strong> Name, Description, Price, Size, Rating, etc.</li>
+            <li><strong>Event Callbacks:</strong> OnOrderClicked and OnFavoriteClicked events</li>
+            <li><strong>Conditional Rendering:</strong> ShowPrice, ShowRating, ShowIngredients, etc.</li>
+            <li><strong>CSS Classes & Styling:</strong> Custom CssClass and Style parameters</li>
+            <li><strong>Child Content:</strong> RenderFragment for custom content inside the component</li>
+            <li><strong>State Management:</strong> Component state and parent-child communication</li>
+            <li><strong>Collections:</strong> Lists of ingredients passed as parameters</li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    private string orderMessage = "";
+    private string favoriteMessage = "";
+    private bool isFavorite = false;
+
+    private List<string> standardIngredients = new() { "Tomato Sauce", "Fresh Mozzarella", "Basil", "Olive Oil" };
+    private List<string> gourmetIngredients = new() { "White Sauce", "Truffle Oil", "Wild Mushrooms", "Arugula" };
+    private List<string> soldOutIngredients = new() { "Tomato Sauce", "Mozzarella", "Pepperoni" };
+    private List<string> premiumIngredients = new() { "Tomato Sauce", "Buffalo Mozzarella", "Prosciutto", "Arugula", "Truffle Oil", "Parmesan" };
+    private List<string> veggieIngredients = new() { "Tomato Sauce", "Mozzarella", "Mushrooms", "Peppers", "Onions" };
+
+    private void HandlePizzaOrder(string pizzaName)
+    {
+        orderMessage = $"🍕 {pizzaName} has been added to your cart!";
+        
+        // Clear message after 3 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            await InvokeAsync(() =>
+            {
+                orderMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void HandleCustomOrder(string pizzaName)
+    {
+        orderMessage = $"🎲 {pizzaName} (Mystery Edition) has been added to your cart! Surprise ingredients await!";
+        
+        // Clear message after 4 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(4000);
+            await InvokeAsync(() =>
+            {
+                orderMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void HandleMysteryOrder()
+    {
+        HandleCustomOrder("Mystery Pizza");
+    }
+
+    private void HandleFavoriteToggle(bool isFav)
+    {
+        favoriteMessage = isFav ? "Truffle Delight added to favorites!" : "Truffle Delight removed from favorites.";
+        
+        // Clear message after 2 seconds
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2000);
+            await InvokeAsync(() =>
+            {
+                favoriteMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void ClearMessage()
+    {
+        orderMessage = "";
+    }
+
+    private void ClearFavoriteMessage()
+    {
+        favoriteMessage = "";
+    }
+}

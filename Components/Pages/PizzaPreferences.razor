@@ -1,0 +1,278 @@
+@page "/pizza-preferences"
+@using BlazingPizza.Data
+@using System.Globalization
+@rendermode InteractiveServer
+
+<PageTitle>Pizza Preferences - Data Binding Demo</PageTitle>
+
+<div class="container">
+    <h1>🍕 Pizza Preferences - Data Binding Demo</h1>
+    <p class="text-muted">Demonstrating various Blazor data binding techniques with pizza preferences</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📝 Basic Data Binding</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Your Name:</label>
+                        <input class="form-control" @bind="customerName" placeholder="Enter your name" />
+                        <div class="mt-2">
+                            <strong>Hello, @customerName!</strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email Address:</label>
+                        <input type="email" class="form-control" @bind="customerEmail" placeholder="user@example.com" />
+                        <small class="text-muted">Your email: @customerEmail</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Favorite Pizza:</label>
+                        <select class="form-select" @bind="favoritePizza">
+                            <option value="">-- Select a pizza --</option>
+                            <option value="Margherita">Margherita</option>
+                            <option value="Pepperoni">Pepperoni</option>
+                            <option value="Hawaiian">Hawaiian</option>
+                            <option value="Meat Lovers">Meat Lovers</option>
+                            <option value="Vegetarian">Vegetarian</option>
+                        </select>
+                        @if (!string.IsNullOrEmpty(favoritePizza))
+                        {
+                            <div class="mt-2 alert alert-success">
+                                🍕 Great choice! <strong>@favoritePizza</strong> pizza is delicious!
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>⚡ Event-Specific Binding</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Live Pizza Search (oninput):</label>
+                        <input class="form-control" @bind-value="liveSearch" @bind-value:event="oninput" 
+                               placeholder="Type to search pizzas..." />
+                        <div class="mt-2">
+                            <strong>Searching for: "@liveSearch"</strong>
+                        </div>
+                        @if (!string.IsNullOrEmpty(liveSearch))
+                        {
+                            <div class="mt-2">
+                                <small class="text-info">🔍 Live results as you type...</small>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Pizza Size Rating (onchange):</label>
+                        <input type="range" class="form-range" min="1" max="10" @bind="sizeRating" />
+                        <div class="d-flex justify-content-between">
+                            <small>Small</small>
+                            <strong>Rating: @sizeRating/10</strong>
+                            <small>Large</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" @bind="wantsDelivery" />
+                            <label class="form-check-label">
+                                I want delivery (@(wantsDelivery ? "Yes" : "No"))
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" @bind="isVegetarian" />
+                            <label class="form-check-label">
+                                I'm vegetarian (@(isVegetarian ? "✅" : "❌"))
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📅 Date Formatting</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Birth Date (UK format: dd-MM-yyyy):</label>
+                        <input type="date" class="form-control" @bind="birthDate" @bind:format="dd-MM-yyyy" />
+                        <small class="text-muted">UK Format: @birthDate.ToString("dd-MM-yyyy")</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Order Date (US format):</label>
+                        <input type="date" class="form-control" @bind="orderDate" />
+                        <small class="text-muted">US Format: @orderDate.ToString("MM/dd/yyyy")</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Delivery Time:</label>
+                        <input type="time" class="form-control" @bind="deliveryTime" @bind:format="HH:mm" />
+                        <small class="text-muted">24-hour format: @deliveryTime.ToString("HH:mm")</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>💰 Custom Formatting</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Pizza Approval Rating (with custom formatting):</label>
+                        <input class="form-control" @bind="ApprovalRating" placeholder="Enter rating (0.000 - 10.000)" />
+                        <div class="mt-2">
+                            <strong>Current Rating: @approvalRating.ToString("0.000", culture) / 10.000</strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Budget for Pizza:</label>
+                        <input class="form-control" @bind="BudgetAmount" placeholder="Enter budget amount" />
+                        <div class="mt-2">
+                            <strong>Budget: @budgetAmount.ToString("C", culture)</strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tips Percentage:</label>
+                        <input type="range" class="form-range" min="0" max="30" @bind="tipPercentage" />
+                        <div class="d-flex justify-content-between">
+                            <small>0%</small>
+                            <strong>@tipPercentage%</strong>
+                            <small>30%</small>
+                        </div>
+                        @if (budgetAmount > 0)
+                        {
+                            <small class="text-success">
+                                Tip Amount: @((budgetAmount * tipPercentage / 100).ToString("C", culture))
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📋 Summary of Your Preferences</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(customerName))
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><strong>Name:</strong> @customerName</li>
+                                    <li class="list-group-item"><strong>Email:</strong> @customerEmail</li>
+                                    <li class="list-group-item"><strong>Favorite Pizza:</strong> @(string.IsNullOrEmpty(favoritePizza) ? "Not selected" : favoritePizza)</li>
+                                    <li class="list-group-item"><strong>Size Rating:</strong> @sizeRating/10</li>
+                                    <li class="list-group-item"><strong>Wants Delivery:</strong> @(wantsDelivery ? "Yes" : "No")</li>
+                                    <li class="list-group-item"><strong>Vegetarian:</strong> @(isVegetarian ? "Yes" : "No")</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><strong>Birth Date:</strong> @birthDate.ToString("dd-MM-yyyy")</li>
+                                    <li class="list-group-item"><strong>Order Date:</strong> @orderDate.ToString("MM/dd/yyyy")</li>
+                                    <li class="list-group-item"><strong>Delivery Time:</strong> @deliveryTime.ToString("HH:mm")</li>
+                                    <li class="list-group-item"><strong>Approval Rating:</strong> @approvalRating.ToString("0.000", culture)</li>
+                                    <li class="list-group-item"><strong>Budget:</strong> @budgetAmount.ToString("C", culture)</li>
+                                    <li class="list-group-item"><strong>Tip:</strong> @tipPercentage% (@((budgetAmount * tipPercentage / 100).ToString("C", culture)))</li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">👆 Fill in your name above to see your preferences summary</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <h5>✨ Data Binding Features Demonstrated:</h5>
+        <ul class="mb-0">
+            <li><strong>Basic @("@bind"):</strong> Automatic two-way binding with default events</li>
+            <li><strong>Event-specific binding:</strong> @("@bind-value:event=\"oninput\"") for live updates</li>
+            <li><strong>Date formatting:</strong> @("@bind:format") for localized date display</li>
+            <li><strong>Custom formatting:</strong> Get/set accessors for complex formatting logic</li>
+            <li><strong>Multiple input types:</strong> text, email, select, checkbox, range, date, time</li>
+            <li><strong>Real-time updates:</strong> UI automatically reflects data changes</li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    // Basic binding properties
+    private string customerName = "";
+    private string customerEmail = "user@contoso.com";
+    private string favoritePizza = "";
+    
+    // Event-specific binding
+    private string liveSearch = "";
+    private int sizeRating = 5;
+    private bool wantsDelivery = true;
+    private bool isVegetarian = false;
+    
+    // Date formatting
+    private DateTime birthDate = new(2000, 1, 1);
+    private DateTime orderDate = DateTime.Today;
+    private TimeOnly deliveryTime = new(18, 0); // 6:00 PM
+    
+    // Custom formatting properties
+    private decimal approvalRating = 5.000m;
+    private decimal budgetAmount = 25.00m;
+    private int tipPercentage = 15;
+    
+    private NumberStyles style = NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign;
+    private CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+    
+    // Custom property with formatting for approval rating
+    private string ApprovalRating
+    {
+        get => approvalRating.ToString("0.000", culture);
+        set
+        {
+            if (decimal.TryParse(value, style, culture, out var number))
+            {
+                approvalRating = Math.Round(Math.Clamp(number, 0, 10), 3);
+            }
+        }
+    }
+    
+    // Custom property with formatting for budget
+    private string BudgetAmount
+    {
+        get => budgetAmount.ToString("0.00", culture);
+        set
+        {
+            if (decimal.TryParse(value, style, culture, out var number))
+            {
+                budgetAmount = Math.Round(Math.Max(number, 0), 2);
+            }
+        }
+    }
+}
